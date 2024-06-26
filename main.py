@@ -79,15 +79,16 @@ class MyButton(Button):
 @bot.command()
 async def test(ctx, buttons: int, rounds: int):
     game_going["host"] = ctx.author.id
-    embed2 = discord.Embed(title="Which cup has the coin?", description=f"**Rules:**\n\n - From {buttons} buttons you have to click on a button which you think has the coin.\n - You can choose 1 option only.\n - If you guess it correct you earn 1 point.\n - Person with maximum points afmter `{rounds}` round wins!\n - Game starts after 30s.")
+    embed2 = discord.Embed(title="Which cup has the coin?", description=f"**Rules:**\n\n - From {buttons} buttons you have to click on a button which you think has the coin.\n - You can choose 1 option only.\n - For each round `20seconds` are given.\n - If you guess it correct you earn 1 point.\n - Person with maximum points afmter `{rounds}` round wins!\n - Game starts after 30s.")
     await ctx.send(embed=embed2, view=Join())
+    await ctx.message.delete()
     await asyncio.sleep(30)
 
     if game_going["cancel"] == False:
        kek = [f"<@{item}>" for item in list(users_point.keys())]
-       xx = pd.Series(index=kek)
+       xx = pd.Series(index=kek, data=[" "]*len(kek))
 
-       embed3 = discord.Embed(title="All players that joined:", description=f'**Total players:** {len(users_point.keys())}\n {str(xx).removeprefix("NaN").removesuffix("dtype: float64")}', color=discord.Color.green())
+       embed3 = discord.Embed(title="All players that joined:", description=f'**Total players:** {len(users_point.keys())}\n {str(xx).removesuffix("dtype: object")}', color=discord.Color.green())
        embed3.set_footer(text="Game starting in 10 seconds!")
        await ctx.send(embed=embed3)
     else:
@@ -134,5 +135,4 @@ async def test(ctx, buttons: int, rounds: int):
     game_going["cancel"] = True
     game_going["host"] = 0
     round1.clear()
-
 # bot.run("token")
