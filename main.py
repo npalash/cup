@@ -4,6 +4,7 @@ from discord.ui import Button, View
 import discord, asyncio, random
 import pandas as pd
 from datetime import datetime, timezone
+from traceback import print_exception
 
 intents = Intents.default()
 intents.members = True
@@ -19,11 +20,12 @@ class Join(Button):
         self.user_c = user_c 
 
     async def callback(self, interaction: discord.Interaction): 
-      if interaction.user.id in self.user_c.keys():
-          await interaction.response.send_message("You already joined the game!", ephemeral=True)
-      await interaction.response.send_message(f"<@{interaction.user.id}> you have successfully joined the game!", ephemeral=True)
-      self.user_p[interaction.user.id] = 0
-      self.user_c[interaction.user.id] = 0
+       if interaction.user.id in self.user_c.keys():
+         await interaction.response.send_message("You already joined the game!", ephemeral=True)
+         return 
+       await interaction.response.send_message(f"<@{interaction.user.id}> you have successfully joined the game!", ephemeral=True)
+       self.user_p[interaction.user.id] = 0
+       self.user_c[interaction.user.id] = 0
 
 class Quit(Button):
     def __init__(self, user_p: dict, user_c: dict, host: int, game_going: dict):
@@ -148,18 +150,21 @@ async def test(ctx, buttons: int = 0, rounds: int = 0):
                     user_clicked.clear()
                     await ctx.send(embed=embb)
         
-        values = [f"**{item}**" for item in list(user_p.values())]
-        users = [f"<@{user}>" for user in list(user_p.keys())]
-        x = pd.Series(values, users)
-        game_going["cancel"] = False
-        em = discord.Embed(title="**ScoreCard of the cups game:\n\n** ", description=str(x).removesuffix("dtype: object"), color=discord.Color.blue())
-        em.timestamp = datetime.now(timezone.utc)
-        em.set_footer(text="The game has ended.")
-        await ctx.send(embed=em)
+        if game_going["cancel"] == False:
+            values = [f"**{item}**" for item in list(user_p.values())]
+            users = [f"<@{user}>" for user in list(user_p.keys())]
+            x = pd.Series(values, users)
+            game_going["cancel"] = False
+            em = discord.Embed(title="**ScoreCard of the cups game:\n\n** ", description=str(x).removesuffix("dtype: object"), color=discord.Color.blue())
+            em.timestamp = datetime.now(timezone.utc)
+            em.set_footer(text="The game has ended.")
+            await ctx.send(embed=em)
 
 @test.error
 async def test_error(ctx, error):
     if isinstance(error, commands.BadArgument):
-        await ctx.send("Invalid input! Please enter a valid number for buttons and rounds.")
+        await ctx.send("The number or buttons or rounds must be numbers not something else!")
+    else:
+        print_exception(error)
 
-bot.run("token")
+bot.run("TOEKN")
